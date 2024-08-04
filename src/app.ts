@@ -6,6 +6,7 @@ import { httpLogger } from "./httpLogger";
 import { authRouter } from "./routers/userRouters";
 import Database from "./db";
 import { checkApiKey } from "./support/middleware";
+import { adminRouter } from "./routers/admin";
 
 const app:Application = express();
 
@@ -27,6 +28,7 @@ if (process.env.PROJ_ENV === 'DEV' || process.env.PROJ_ENV === 'PRODUCTION') {
     Database.getInstance()
  }
 app.use("/", authRouter)
+app.use("/", adminRouter)
 app.use((req:Request, res:Response, next:NextFunction)=>{
     failedResponse(res, 404, `Invalid endpoint, inspect url again.`)
 })

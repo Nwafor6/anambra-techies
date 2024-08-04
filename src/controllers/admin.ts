@@ -40,8 +40,8 @@ export class AdminDashboard {
         try {
 
             const users = await User.findById(req.params.id)
-            .populate("idFront")
-            .populate("idBack")
+            .populate("picture")
+            .select("-password")
             return successResponse(res, 200, "Success", {
                 users,
             });

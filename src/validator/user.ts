@@ -24,15 +24,11 @@ export const userValidator = Joi.object({
     .message('Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character.'),
   // userType: Joi.string().valid('talent', 'employer').required(),
   sendMeTalentTipsAndNewLetter:Joi.boolean().required(),
-  termsAndConditions: Joi.boolean().valid(true).required().error(new Error('You must agree to the terms and conditions to continue.'))
+  termsAndConditions: Joi.boolean().required()
 });
 
 export const updateUserValidator = Joi.object({
-  email: Joi.string().email(),
   fullname: Joi.string().allow(""),
-  password: Joi.string().allow(""),
-  userType: Joi.string().valid('employer', 'talent', 'admin'),
-  isVerified: Joi.boolean(),
   personalAddress: Joi.string().allow(""),
   businessAddress: Joi.string().allow(""),
   postalCode: Joi.string().allow(""),
@@ -43,7 +39,6 @@ export const updateUserValidator = Joi.object({
   about: Joi.string().allow(""),
   address: Joi.string().allow(""),
   picture: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(""), // Assuming picture is an ObjectId
-  fcmToken: Joi.string().allow(""),
 });
 
 export const emailValidator = Joi.object({

@@ -13,13 +13,18 @@ export class Onboarding {
   static async signup(req: Request, res: Response) {
     try {
       const { error, value } = userValidator.validate(req.body);
-      if (error) return failedResponse(res, 400, `${error.details[0].message}`);
+      if (error) return failedResponse(res, 400, `${error.details[0]?.message}`);
+
+      if(value.termsAndConditions == false){
+        return failedResponse(res, 400, "You must agree to the terms and conditions to continue.")
+      }
 
       const emailExist = await User.findOne({ email: value.email }).select('email');
       if (emailExist) {
         return failedResponse(res, 400, 'Email already exists.');
       }
-      value.userType ="employer"
+
+      value.userType = "employer";
       const newUser = await User.create(value);
 
       await OtpToken(value.email, 'Account activation code', 'templates/activateemail.html');
@@ -30,7 +35,7 @@ export class Onboarding {
       writeErrorsToLogs(error);
       return failedResponse(res, 500, error.message);
     }
-  }
+  };
 
   static async updateProfile(req: Request, res: Response) {
     try {
@@ -115,8 +120,11 @@ export class Onboarding {
           if (!user) {
             return failedResponse (res, 404, "Email does not exist.")
           }
+          // if (!user.isVerified) {
+          //   return failedResponse (res, 404, "Account not verie.")
+          // }
           const validatePassword = await bcrypt.compare(value.password, user.password)
-          if (!validatePassword) return failedResponse (res, 400, `Incorrect password`)
+          if (!validatePassword) return failedResponse (res, 400, `Incorrect credentials`)
           const accessToken = generateJwtToken({email:value.email, userId:user.id,userType:user.userType })
           const payload ={
             email:user.email,
@@ -137,10 +145,8 @@ export class Onboarding {
   };
   static async getAccount (req:Request, res:Response){
     try {
-        const user = await User.findById(req.params.id)
-        if (!user) {
-          return failedResponse (res, 404, "Email does not exist.")
-        }
+        const userId = (req as any).user._id
+        const user = await User.findById(userId).select("-password")
         return successResponse(res,200,"Success",user )
     } catch (error:any) {
         writeErrorsToLogs(error)

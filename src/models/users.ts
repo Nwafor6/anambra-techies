@@ -26,20 +26,25 @@ const UserSchema:Schema<IUser> = new Schema<IUser>({
     }
   }, { timestamps: true });
 
-UserSchema.pre("save", async function (next){
-  if (this.isNew && this.userType === "talent"){
-    // hash password
-    this.password = await bcrypt.hash(this.password, 10);
-    // check if the user has a resturant. else pass;
-    const stack = await Stack.findOne({user:this._id}).select("_id");
-    if (stack){
-      return;
-    }else{
-      await Stack.create({user:this._id})
+  UserSchema.pre("save", async function (next) {
+    try {
+      if (this.isNew) {
+        // Hash password for all user types
+        this.password = await bcrypt.hash(this.password, 10);
+  
+        // If userType is "talent", check if the user has a stack, else create one
+        if (this.userType === "talent") {
+          const stack = await Stack.findOne({ user: this._id }).select("_id");
+          if (!stack) {
+            await Stack.create({ user: this._id });
+          }
+        }
+      }
+      next();
+    } catch (error:any) {
+      next(error);
     }
-  };
-  next()
-})
+  });
 
 const StackSchema: Schema<IStack> = new Schema<IStack>({
   user: {
