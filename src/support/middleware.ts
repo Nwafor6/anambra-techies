@@ -6,6 +6,8 @@ import { S3Client,S3ClientConfig, PutObjectCommand } from "@aws-sdk/client-s3"
 import { failedResponse, successResponse } from "./http";
 import crypto from "crypto"
 import { verifyJwtToken } from "./generateTokens";
+import { User } from "../models/users";
+import { writeErrorsToLogs } from "./helpers";
 
 dotenv.config()
  
@@ -79,3 +81,54 @@ export async function handlefileUpload(req: Request, res: Response, next: NextFu
   }
 }
 
+export const IsAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.headers.authorization) {
+      return failedResponse(res, 401, 'Access denied. Authorization header missing.');
+  }
+
+  const token = req.headers.authorization.split(" ")[1] || req.cookies.token;
+  if (!token) {
+      return failedResponse(res, 401, 'Access denied. No token provided.');
+  }
+
+  try {
+      const decodedToken = verifyJwtToken(token);
+
+      const user = await User.findById(decodedToken.userId);
+      if (!user?.isVerified) {
+      return failedResponse(res, 401, 'Account onboarding is not completed yet, please verify email.');
+      }
+
+
+      if (user.userType !== "admin") {
+      return failedResponse(res, 403, 'Permission denied. Only accessible by admin.');
+      }
+
+      (req as any).user = {
+      email: decodedToken.email,
+      _id: decodedToken.userId,
+      userType: decodedToken.userType
+      };
+      next();
+  } catch (error: any) {
+      writeErrorsToLogs(error.message)
+      return failedResponse(res, 401, 'Invalid access token.');
+  }
+};
+
+export const TECHIES_API_KEY = process.env.TECHIES_API_KEY;
+
+// Middleware to check API key
+export const checkApiKey = (req: Request, res: Response, next: NextFunction) => {
+  const apikey = req.headers['apikey'];
+
+  if (!apikey) {
+    return failedResponse(res, 401, "API key is missing")
+  }
+
+  if (apikey !== TECHIES_API_KEY) {
+    return failedResponse(res, 403, "Invalid apikey")
+  }
+
+  next();
+};

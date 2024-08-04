@@ -4,6 +4,8 @@ import bodyParser from "body-parser"
 import { failedResponse } from "./support/http"; 
 import { httpLogger } from "./httpLogger";
 import { authRouter } from "./routers/userRouters";
+import Database from "./db";
+import { checkApiKey } from "./support/middleware";
 
 const app:Application = express();
 
@@ -15,14 +17,15 @@ app.use(
     })
 )
 app.use(httpLogger)
+app.use(checkApiKey);
 app.use(bodyParser.urlencoded({ extended: true , limit: '50mb'}));
 app.use(express.static('./uploads'))
 app.use(express.json())
 
 // CONNECT TO DB 
-// if (process.env.PROJ_ENV === 'DEV' || process.env.PROJ_ENV === 'PRODUCTION') {
-//     Database.getInstance()
-//  }
+if (process.env.PROJ_ENV === 'DEV' || process.env.PROJ_ENV === 'PRODUCTION') {
+    Database.getInstance()
+ }
 app.use("/", authRouter)
 app.use((req:Request, res:Response, next:NextFunction)=>{
     failedResponse(res, 404, `Invalid endpoint, inspect url again.`)
