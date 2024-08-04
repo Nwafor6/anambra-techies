@@ -1,5 +1,5 @@
 import { Schema, model, Model } from 'mongoose';
-import { IEducation, IHobbies, ISkills, ISocialLink, IStack, IUser, IWorkExperience, Imedia, Itoken } from '../interfaces/users';
+import { IEducation, IHobbies, ISkills, ISocialLink, IStack, ITalent, IUser, IWorkExperience, Imedia, Itoken } from '../interfaces/users';
 import bcrypt from "bcrypt"
 
 const UserSchema:Schema<IUser> = new Schema<IUser>({
@@ -45,6 +45,55 @@ const UserSchema:Schema<IUser> = new Schema<IUser>({
       next(error);
     }
   });
+
+
+const TalentSchema: Schema<ITalent> = new Schema<ITalent>({
+    name: {
+      type: String,
+      required: true
+    },
+    location: {
+      type: String,
+      required: true
+    },
+    stack: {
+      type: String,
+      required: true,
+      enum: ['Newbie', 'Frontend Developer', 'Backend Developer', 'UI/UX Designer', 'Product Manager', 'Data Analyst', 'Other']
+    },
+    other: {
+      type: String,
+      required: function() {
+        return this.stack === 'Other';
+      },
+      default: null
+    },
+    learningGoals: {
+      type: String,
+      required: function() {
+        return this.stack === 'Newbie';
+      },
+      default: null
+    },
+    whatsappNumber: {
+      type: String,
+      required: true
+    },
+    onboarded: {
+      type: Boolean,
+      default: false // Add this line
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    }
+  }, {
+    timestamps: true
+  });
+  
+  
+
 
 const StackSchema: Schema<IStack> = new Schema<IStack>({
   user: {
@@ -194,3 +243,4 @@ export const Education: Model<IEducation> = model<IEducation>('Education', Educa
 export const Skills: Model<ISkills> = model<ISkills>('Skills', SkillsSchema);
 export const Hobbies: Model<IHobbies> = model<IHobbies>('Hobbies', HobbiesSchema);
 export const SocialLink: Model<ISocialLink> = model<ISocialLink>('SocialLink', SocialLinkSchema);
+export const Talent: Model<ITalent> = model<ITalent>('Talent', TalentSchema);

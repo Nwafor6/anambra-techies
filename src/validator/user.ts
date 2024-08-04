@@ -74,3 +74,30 @@ export const ChangePasswordInDashboardValidator=Joi.object({
   oldPassword: Joi.string().min(6).required(),
   newPassword: Joi.string().min(6).required(),
 })
+
+
+export const talentValidator = Joi.object({
+  name: Joi.string().required(),
+  location: Joi.string().required(),
+  stack: Joi.string().valid(
+    'Newbie',
+    'Frontend Developer',
+    'Backend Developer',
+    'UI/UX Designer',
+    'Product Manager',
+    'Data Analyst',
+    'Other'
+  ).required(),
+  other: Joi.when('stack', {
+    is: 'Other',
+    then: Joi.string().required(),
+    otherwise: Joi.string().optional().allow(null, '')
+  }),
+  learningGoals: Joi.when('stack', {
+    is: 'Newbie',
+    then: Joi.string().required(),
+    otherwise: Joi.string().optional().allow(null, '')
+  }),
+  whatsappNumber: Joi.string().required(),
+  email: Joi.string().email().required()
+});

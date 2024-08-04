@@ -85,3 +85,14 @@ export interface Itoken extends Document{
     created_at?: Date;
     expires_at: Date;
   };
+
+export interface ITalent extends Document {
+  name: string;
+  location: string;
+  stack: 'Newbie' | 'Frontend Developer' | 'Backend Developer' | 'UI/UX Designer' | 'Product Manager' | 'Data Analyst' | 'Other';
+  other?: string;
+  learningGoals?: string;
+  whatsappNumber: string;
+  onboarded?: boolean; // Add this line
+  email: string;
+}
